@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>任务跟踪管理系统-主页</title>
+    <link rel="stylesheet" type="text/css" href="css/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="css/themes/icon.css">
+
+    <!--TODO   这里有个小错误 表示我将要做但是我现在做不了 加个标记 可以在控制台直接定位到这里-->
+    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="js/jquery-migrate-1.2.1.min.js"></script>
+    <!--html5以后默认script是javascript 所以type可以不写-->
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="js/jquery.fullcalendar.js"></script>
+
+    <script type="text/javascript" >
+        $(function () {
+            //当页面加载完毕
+            $('#info_level').combobox({
+                url:'info/findAllLevel',
+                valueField:'level_id',
+                textField:'level_name'
+            });
+            $('#info_state').combobox({
+                url:'info/findAllState',
+                valueField:'state_id',
+                textField:'state_name'
+            });
+            //获取当天任务列表
+            $("#showCurrentDayTask").datagrid({
+                url:"info/showCurrentDayTask",
+                method:"post",
+                rownumbers:true,//如果为true，则显示一个行号列。
+                pagination:true,//如果为true，则在DataGrid控件底部显示分页工具栏。
+                fitColumns:true,//真正的自动展开/收缩列的大小，以适应网格的宽度，防止水平滚动。
+                pageSize:5,
+                pageList:[5,10,15,20,25],
+                //冻结列
+                frozenColumns:[[
+                    {field:'info_id',title:'编号',align:'center'},
+                    {field:'info_create_date',title:'创建时间',align:'left'},
+                    {field:'info_name',title:'任务名称',align:'left'},
+                ]],
+
+                columns:[[
+                    {field:'sendStaff',title:'派发人',
+                        formatter: function (value,row,index) {//初始化
+                            if(row) {
+                                return row.sendStaff.staff_name;
+                            }
+                        }
+                    },
+                    {field:'taskLevel',title:'任务等级',
+                        formatter: function (value,row,index) {//初始化
+                            if(row) {
+                                return row.taskLevel.level_name;
+                            }
+                        }
+                    },
+                    {field:'taskState',title:'任务状态',
+                        formatter: function (value,row,index) {//初始化
+                            if(row) {
+                                return row.taskState.state_name;
+                            }
+                        }
+                    },
+                ]]
+            });
+            $("#showCurrentMonthTask").datagrid({
+                url:"info/showCurrentMonthTask",
+                method:"post",
+                rownumbers:true,//如果为true，则显示一个行号列。
+                pagination:true,//如果为true，则在DataGrid控件底部显示分页工具栏。
+                fitColumns:true,//真正的自动展开/收缩列的大小，以适应网格的宽度，防止水平滚动。
+                pageSize:5,
+                pageList:[5,10,15,20,25],
+                frozenColumns:[[
+                    {field:'info_id',title:'编号',align:'center'},
+                    {field:'info_create_date',title:'创建时间',align:'left'},
+                    {field:'info_name',title:'任务名称',align:'left'},
+                ]],
+                columns:[[
+                    {field:'sendStaff',title:'派发人',
+                        formatter: function (value,row,index) {//初始化
+                            if(row) {
+                                return row.sendStaff.staff_name;
+                            }
+                        }
+                    },
+                    {field:'taskLevel',title:'任务等级',
+                        formatter: function (value,row,index) {//初始化
+                            if(row) {
+                                return row.taskLevel.level_name;
+                            }
+                        }
+                    },
+                    {field:'taskState',title:'任务状态',
+                        formatter: function (value,row,index) {//初始化
+                            if(row) {
+                                return row.taskState.state_name;
+                            }
+                        }
+                    },
+                ]]
+            });
+        });
+        $(function () {
+            //当页面加载完毕
+            //控制combobox下拉选择框不可以输入
+            $('#info_level').combobox({
+                editable:false
+            });
+            $('#info_state').combobox({
+               editable:false
+            });
+        });
+        function saveTask() {
+            var info_create_date = $("#info_create_date").val();
+            if (info_create_date == null) {
+                $.messager.alert("警告", "创建时间不能为空！");
+                return;
+            }
+            //任务承接人
+            var receiveStaff = $("#receiveStaff").combotree("getValue");
+            var info_name = $("#info_name").val();
+            var info_desc = $("#info_desc").val();
+            var info_level = $("#info_level").combobox("getValue");
+            var info_state = $("#info_state").combobox("getValue");
+            $.ajax({
+                url: "info/saveTask",
+                type: "get",
+                data: {
+                    "info_create_date": info_create_date, "info_name": info_name,"receiveStaff":receiveStaff,
+                    "info_desc": info_desc, "info_level": info_level, "info_state": info_state
+                },
+                success: function (data) {
+                    // $.messager.alert('提示信息',data.result);
+                    if(data == 1) {
+                        alert("恭喜您，添加任务成功");
+                        //关闭窗口，并刷新
+                        $('#taskDlg').dialog('close');
+                        window.location.reload();
+                    }else {
+                        alert("对不起，添加任务失败")
+                    }
+                },
+                error: function () {
+                    alert("出现异常,请联系管理员")
+                }
+            })
+        }
+        //任务派发
+        function sendTask(){
+            //首先查询所有人员
+            $("#receiveStaff").combotree({
+                url:"staff/findAllDeptStaff",
+                cascadeCheck:false,
+                onlyLeafCheck:true
+            }),
+            $('#taskDlg').dialog('open').dialog("setTitle","<span style='color:blue;font-family: 微软雅黑;'>填写个人工作</span>");
+        }
+
+
+        //个人任务查询
+        function showSingleTask() {
+            //需要获取显示器的宽高
+            var scrHeight = screen.availHeight;
+            var scrWidth = screen.availWidth;
+            //弹出个人查询窗口
+            var winObj = window.open("single.html","singleTask","top=0,left=0,toolbar=no,manubar=no,scrollbars=no,status=no,");
+            winObj.moveTo(0,0);
+            winObj.resizeTo(scrWidth,scrHeight);
+        }
+
+        function showChart() {
+            //需要获取显示器的宽高
+            var scrHeight = screen.availHeight;
+            var scrWidth = screen.availWidth;
+            //弹出个人查询窗口
+            var winObj = window.open("chart.html","chart","top=0,left=0,toolbar=no,manubar=no,scrollbars=no,status=no,");
+            winObj.moveTo(0,0);
+            winObj.resizeTo(scrWidth,scrHeight);
+        }
+    </script>
+
+
+
+
+</head>
+<body class="easyui-layout">
+    <div data-options="region:'north',border:false" style="height:60px;background:#B3DFDA;padding:10px">LOGO</div>
+    <div data-options="region:'west',split:true,title:'菜单',hideExpandTool:true,
+    expandMode:null,
+    collapsed:true,
+    collapsedSize:70,
+    hideCollapsedContent:false,//显示按钮菜单
+    collapsedContent:function(){
+    return $('#menubar')
+    }">
+
+    </div>
+
+
+
+    <div data-options="region:'center',title:'Center'">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'west',title:'当天任务', split:true" style="width:50%">
+                <!--当天任务列表-->
+                <table id="showCurrentDayTask" style="height:100%"></table>
+            </div>
+            <div data-options="region:'center',title:'当月任务',split:true" style="width:50%" >
+                <!--当月任务列表-->
+                <table id="showCurrentMonthTask" style="height: 100%"></table>
+            </div>
+            <div data-options="region:'south',split:true" style="height:75%">
+                <!--日历列表-->
+                <div class="easyui-fullCalendar" fit="true"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--按钮菜单-->
+    <div id="menubar" style="padding: 2px">
+        <a class="easyui-linkbutton" style="width: 100%"></a>
+        <a class="easyui-linkbutton" onclick="sendTask()" style="width: 100%" data-options="iconCls:'icon-man'">任务派发</a>
+        <a class="easyui-linkbutton" onclick="showSingleTask()" style="width: 100%" data-options="iconCls:'icon-man'">个人查询</a>
+        <a class="easyui-linkbutton" onclick="showChart()" style="width: 100%" data-options="iconCls:'icon-man'">统计报表</a>
+        <a class="easyui-linkbutton" style="width: 100%" data-options="iconCls:'icon-man'">权限设置</a>
+    </div>
+
+
+    <!--填报任务-->
+    <div id="taskDlg" class="easyui-dialog" style="width:600px;height:350px;"
+         closed="true" buttons="#taskDlg_buttons">
+        <table>
+            <tr>
+                <td>接收人员：</td>
+                <td><input type="text" id="receiveStaff" style="width: 220px"></td>
+            </tr>
+            <tr>
+                <td>任务时间：</td>
+                <td><input type="text" id="info_create_date" style="width: 220px"  ></td>
+            </tr>
+            <tr>
+                <td>任务名称：</td>
+                <td><input type="text" id="info_name" style="width: 220px"> </td>
+            </tr>
+            <tr>
+                <td>任务描述：</td>
+                <td><textarea id="info_desc" rows="5" cols="25" style="width: 220px"></textarea></td>
+            </tr>
+            <tr>
+                <td>任务级别</td>
+                <td><input id="info_level" style="width: 220px" ></td>
+            </tr>
+            <tr>
+                <td>任务状态</td>
+                <td><input id="info_state" style="width: 220px"></td>
+            </tr>
+        </table>
+    </div>
+    <div id="taskDlg_buttons" >
+        <a href="#" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveTask()"></a>
+        <a href="#" class="easyui-linkbutton" iconCls="icon-cancel" onclick="$('#taskDlg').dialog('close')"></a>
+    </div>
+
+</body>
+</html>

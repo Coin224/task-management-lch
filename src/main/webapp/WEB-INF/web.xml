@@ -1,0 +1,71 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>Archetype Created Web Application</display-name>
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath*:beans-*.xml</param-value>
+  </context-param>
+  <filter>
+    <filter-name>encoding</filter-name>
+    <filter-class>
+      org.springframework.web.filter.CharacterEncodingFilter
+    </filter-class>
+    <init-param>
+      <param-name>forceEncoding</param-name>
+      <param-value>true</param-value>
+    </init-param>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>encoding</filter-name>
+    <url-pattern>/</url-pattern>
+  </filter-mapping>
+
+  <!--放在filter-mapping后面 不能随便放  不然可能产生顺序问题 要遵守dtd规则-->
+  <!--加个监听才能读取spring配置文件-->
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
+
+  <servlet>
+    <servlet-name>spring-mvc</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+      <!--拦截的请求要分发的话要参考beans-mvc.xml这个配置文件-->
+      <!--初始化这个配置文件-->
+      <param-name>contextConfigLocation</param-name>
+      <param-value>classpath:beans-mvc.xml</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>spring-mvc</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+  <session-config>
+    <!--配置session会话时长，单位：分钟-->
+    <session-timeout>20</session-timeout>
+  </session-config>
+  <!--jsp九个内置对象-->
+  <!--request response session page pageContext application out config exception-->
+
+
+  <!--系统访问主页  协议(http,https,ftp..)://域名(IP地址):端口号/项目名/welcome-file-list-->
+  <!--如果端口号是80  可以不用输入端口号-->
+  <!--如果这个web.xml文件中没有这哥welcome-file-list配置  回去tomcat安装目录中的web.xml中找-->
+  <welcome-file-list>
+    <welcome-file>login.html</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+
+</web-app>

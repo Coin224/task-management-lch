@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>任务跟踪管理系统-登录</title>
+
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript">
+        //如果不用jquery怎么做 ?   这样也能获取到这个对象
+        //document.getElementById("staff_workcode")
+
+
+        //有#是id选择器  获取到staff_workcode 对象  这种是属于jquery
+        //去掉#是元素选择器 $("input")获取页面所有的input元素
+        // $("#staff_workcode")
+        // $("#staff_password")
+
+
+        $(function () {//页面加载完毕
+            var staff_workcode = $("#staff_workcode").val();//获取到staff_workcode的值
+            var staff_password = $("#staff_password").val();
+        })
+
+
+        //方法2：
+        function login() {
+            //1点击登录按钮   获取到这两个值
+            var staff_workcode = $("#staff_workcode").val();//获取到staff_workcode的值
+            var staff_password = $("#staff_password").val();
+            //2用jquery中的ajax向服务器发送请求    请求与响应    原生ajax对象是XMLHttpRequest
+            $.ajax({
+
+                //=======请求=========
+                //请求的地址  请求controller
+                url: "staff/login",
+                //请求的参数
+                //{"key":val,"key":val}
+                data: {"staff_workcode":staff_workcode,"staff_password":staff_password},  //json对象的写法{}
+                type: "post",   //post参数不限长度，加密，不读取缓存  get地址栏传参 ，不加密，长度受限 会读取缓存 速度快
+
+
+                //=======响应=======
+                success: function (staff) {//和请求中的data不同
+                    //请求成功执行的方法
+                    if(staff == null) {
+                        staff.staff_name;
+                        alert("用户名或密码错误");
+                    } else {
+                        alert("欢迎"+ staff.staff_name +"进入任务跟踪管理系统");
+                        //跳转到index.html
+                        window.location.href = "index.html";
+                    }
+                },
+                error: function () {
+                    //请求失败
+                    alert("对不起,请求出现异常，请联系管理员 error_code:0401");
+                }
+
+            })
+        }
+
+
+
+    </script>
+</head>
+<body class="easyui-layout">
+    <div data-options="region:'north',border:false" style="height:60px;background:#B3DFDA;padding:10px">
+        <!--TODO <iframe src="LOGO.html" style="height: 20px;width: 100%"/>-->
+        LOGO
+    </div>
+    <div data-options="region:'center',title:'Center'">
+            请输入工号:<input type="text" id="staff_workcode"/><br>
+            请输入密码:<input type="password" id="staff_password"/><br>
+            <button onclick="login()">登录</button>
+    </div>
+</body>
+</html>

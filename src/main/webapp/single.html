@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人查询</title>
+    <link rel="stylesheet" type="text/css" href="css/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="css/themes/icon.css">
+
+    <!--TODO   这里有个小错误 表示我将要做但是我现在做不了 加个标记 可以在控制台直接定位到这里-->
+    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="js/jquery-migrate-1.2.1.min.js"></script>
+    <!--html5以后默认script是javascript 所以type可以不写-->
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+    <script>
+        $(function () {
+            $("#searchBtn").click(function () {
+                //当按钮被点击   执行这个方法
+                $("#singleTable").datagrid({
+                    url:"info/showSingleTask",
+                    method:"post",
+                    rownumbers:true,
+                    toolbar:"#singleToolbar",
+                    fit:true,
+                    fitColumns:true,
+                    pagination:true,
+                    columns:[[
+                        {title:'编号',field:'info_id',align:'center'},
+                        {title:'创建时间',field:'info_create_date',align:'left'},
+                        {title:'任务名称',field:'info_name',align:'left'},
+                        {title:'派发人',field:'sendStaff',
+                            formatter: function (value,row,index) {//初始化
+                                if(row) {
+                                    return row.sendStaff.staff_name;
+                                }
+                            }
+                        },
+                        {title:'任务等级',field:'taskLevel',
+                            formatter: function (value,row,index) {//初始化
+                                if(row) {
+                                    return row.taskLevel.level_name;
+                                }
+                            }
+                        },
+                        {title:'任务状态',field:'taskState',
+                            formatter: function (value,row,index) {//初始化
+                                if(row) {
+                                    return row.taskState.state_name;
+                                }
+                            }
+                        },
+                    ]]
+                })
+            })
+            $("#exportBtn").click(function(){
+                window.location.href = "info/exportDataToExcel?startdate="+$("#startdate").val()+"&enddate="+$("#enddate").val();
+            })
+        })
+    </script>
+</head>
+<body class="easyui-layout">
+    <div data-options="region:'north',border:false">
+    </div>
+    <div data-options="region:'center',border:false">
+        <div id="singleToolbar">
+            查询时间：<input type="datetime-local" id="startdate"/>-<input type="datetime-local" id="enddate"/>
+            <a href="#" class="easyui-linkbutton" id="searchBtn">查找</a>
+            <a href="#" class="easyui-linkbutton" id="deleteBtn">删除</a>
+            <a href="#" class="easyui-linkbutton" id="exportBtn">导出</a>
+        </div>
+        <table id="singleTable"></table>
+    </div>
+</body>
+</html>

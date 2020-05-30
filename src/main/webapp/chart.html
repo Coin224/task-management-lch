@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>个人查询</title>
+    <link rel="stylesheet" type="text/css" href="css/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="css/themes/icon.css">
+    <!--<script type="text/javascript" src="js/jquery.min.js"></script>-->
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" src="js/jquery-migrate-1.2.1.min.js"></script>
+    <!--TODO <script type="text/javascript" src="js/jquery-migrate-1.2.1.min.js" />-->
+    <script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="js/echarts/echarts.min.js"></script>
+
+    <script>
+        // 导出具体谁的数据，从哪天到哪天
+        $(function(){
+            $("#staff").combotree({
+                url:"staff/findAllDeptStaff",
+                cascadeCheck:true,
+                onlyLeafCheck:false
+            });
+        })
+        function doChart(){
+            var jsonParam = {};
+            jsonParam.staff_id = $("#staff").combotree("getValue");
+            jsonParam.startdate = $("#startdate").val();
+            jsonParam.enddate = $("#enddate").val();
+            $.ajax({
+                url:"info/showTaskForChart",
+                method:"post",
+                data:jsonParam,
+                async:false,
+                success:function(data){
+                    //data需要做图形处理的数据
+                    makeChart(data);
+                },
+                beforeSend:function(data){
+                    //设置图层显示 loading
+                    $("#loading").css("display","");//显示图层
+                },
+                complete:function(){
+                    $("#loading").css("display","none");//隐藏图层
+                }
+            })
+        }
+        function makeChart(chartData){
+
+            var nameData = new Array();//创建数组
+            var numberData = new Array();//创建数组
+            var pieData = new Array();//创建数组
+
+            nameData.push("未开始");
+            nameData.push("进行中");
+            nameData.push("已完成");
+
+            //创建4个指标对应的值
+            var tempNum1=0,tempNum2=0,tempNum3=0;
+            for(var i=0;i<chartData.length;i++){
+                var taskInfoObject = chartData[i];
+                if(taskInfoObject.taskState.state_id=="1"){
+                    tempNum1++;
+                }else if(taskInfoObject.taskState.state_id=="2"){
+                    tempNum2++;
+                }else if(taskInfoObject.taskState.state_id=="3"){
+                    tempNum3++;
+                }
+            }
+
+            //饼状图数据
+            pieData.push({name:"未开始",value:tempNum1});
+            pieData.push({name:"进行中",value:tempNum2});
+            pieData.push({name:"已完成",value:tempNum3});
+
+            //柱状图数据
+            numberData.push(tempNum1);
+            numberData.push(tempNum2);
+            numberData.push(tempNum3);
+
+            //初始化echarts实例，一个图形对应一个实例
+            var numberChart = echarts.init(document.getElementById("numberChart"));
+            var pieChart = echarts.init(document.getElementById("pieChart"));
+
+
+            //指定图表对应的配置项以及数据
+            var numberOption = {
+                title:{
+                    text:'任务跟踪管理',
+                    subtext:"副标题",
+                    x:"center",//直接坐标的数字 px
+                    y:"top",
+                    itemGap:30,//
+                    textStyle:{
+                        fontSize:26,
+                        color:"#000080",
+                        fontWeight:"bolder"
+                    }
+                },
+                toolbox:{
+                    show:false,
+                    orient:"vertical",//工具类图标布局方向
+                    itemSize:16,//icon大小
+                    itemGap:30,//图标间隔
+                    feature:{
+                        saveAsImage:{
+                            show:true,
+                            type:"jpeg",//格式
+                            name:"",//title
+                            pixelRatio:2 //保存图片的分辨率，默认
+                        }
+                    }
+                },
+                xAxis:{
+                    data:nameData
+                },
+                yAxis:{
+                    type:"value"
+                },
+                series:[{
+                    type:"bar",
+                    barWith:"60%",
+                    data:numberData,
+                    itemStyle:{
+                        normal:{
+                            color:function(params){
+                                var colorList = ['red','#EFE534','#EE9320','#C3826','#183762']
+                                return colorList[params.dataIndex];
+                                //return '#'+Math.floor(Math.random()*(256*256*256-1)).toString(16);
+                            }
+                        }
+                    }
+                }]
+            }
+
+            //将定义好的配置项赋给chart对象
+            //默认第二个参数为false，如果设置为ture，每次清空重新加载图像
+            numberChart.setOption(numberOption,true);
+        }
+    </script>
+</head>
+<body class="easyui-layout">
+<div data-options="region:'north',border:false">
+
+</div>
+<div data-options="region:'center',border:false">
+    <div id="singleToolbar">
+        选择人员：<input type="text" id="staff" style="width: 220px">
+        查询时间：<input type="datetime-local" id="startdate" /> -
+        <input type="datetime-local" id="enddate" />
+        <a href="#" onclick="doChart()" class="easyui-linkbutton" >生成图形</a>
+    </div>
+</div>
+<div id="loading" style="display: none;width: 100%;height: 100%;position:absolute;
+z-index:10;filter: alpha(Opacity=80);-opacity:0.5;-moz-opacity:0.5;padding-top:150px;">
+    <img src="images/loading.gif">
+</div>
+
+<div id="numberChart" style="height: 500px;width:50%;position: absolute;top: 40px;"></div>
+<div id="pieChart"></div>
+</body>
+</html>

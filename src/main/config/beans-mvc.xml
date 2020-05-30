@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
+
+
+    <!--注解驱动注册-->
+    <!--mvc中要用的  其中@ResponseBody需要-->
+    <!--返回json要用到-->
+    <mvc:annotation-driven />
+
+
+    <!--login.html  index.html 等静态资源  不需要请求的资源-->
+    <!--静态资源可以交由默认的Servlet处理-->
+    <mvc:default-servlet-handler />
+
+    <!--扫描controller-->
+    <context:component-scan base-package="com.lch.action" />
+
+    <!--IE执行ajax，返回json出现下载框-->
+    <bean id="mappingJackson2HttpMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" >
+        <property name="supportedMediaTypes">
+            <list>
+                <value>text/html;charset=UTF-8</value>
+            </list>
+        </property>
+    </bean>
+    <!-- 启动springmvc注解功能，完成请求与domain对象的映射-->
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="messageConverters" >
+            <list>
+                <ref bean="mappingJackson2HttpMessageConverter"/> <!--json转换器-->
+            </list>
+        </property>
+    </bean>
+
+
+</beans>
